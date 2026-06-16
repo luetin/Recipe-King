@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Recept - RecipeKing{% endblock %}
+{% block content %}
+<h1>Recept</h1>
+<form method="get" action="/recipes" class="field" style="max-width:400px;">
+  <input type="text" name="q" placeholder="Sök på titel, beskrivning eller tagg..." value="{{ search or '' }}">
+  {% if active_tag %}<input type="hidden" name="tag" value="{{ active_tag }}">{% endif %}
+</form>
+
+{% if active_tag %}
+<p>Filtrerat på tagg: <span class="tag-chip">{{ active_tag }}</span> <a href="/recipes" class="muted">(rensa filter)</a></p>
+{% endif %}
+
+{% if recipes %}
+<div class="recipe-grid">
+  {% for recipe in recipes %}
+  <a class="card recipe-card" href="/recipes/{{ recipe.id }}">
+    {% if recipe.image_path %}
+      <img src="/uploads/{{ recipe.image_path }}" alt="{{ recipe.title }}">
+    {% else %}
+      <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/%3E" alt="">
+    {% endif %}
+    <h3>{{ recipe.title }}</h3>
+    {% if recipe.tags %}
+    <div class="tag-list">
+      {% for tag in recipe.tags %}
+      <span class="tag-chip">{{ tag.name }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+    <p class="muted">{{ recipe.created_by.email }}</p>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<p class="muted">Inga recept hittades. <a href="/recipes/new">Lägg till ett nytt recept</a>.</p>
+{% endif %}
+{% endblock %}

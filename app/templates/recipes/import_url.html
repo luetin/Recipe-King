@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Importera från URL - RecipeKing{% endblock %}
+{% block content %}
+<h1>Importera recept från URL</h1>
+<p class="muted">Stödda sajter: ICA.se och Köket.se. Klistra in en länk till ett recept.</p>
+<form method="post" action="/recipes/import/url" class="card" style="max-width:500px;">
+  <div class="field">
+    <label for="url">Recept-URL</label>
+    <input type="url" id="url" name="url" required placeholder="https://www.ica.se/recept/...">
+  </div>
+  <button class="btn" type="submit">Hämta recept</button>
+</form>
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}{{ recipe.title }} - RecipeKing{% endblock %}
+{% block content %}
+<a href="/recipes">&larr; Tillbaka till recept</a>
+<h1>{{ recipe.title }}</h1>
+
+{% set is_owner = current_user and current_user.id == recipe.created_by_id %}
+{% if recipe.tags or is_owner %}
+<div class="tag-list">
+  {% for tag in recipe.tags %}
+  <span class="tag-chip-wrap">
+    <a class="tag-chip" href="/recipes?tag={{ tag.name }}">{{ tag.name }}</a>
+    {% if is_owner %}
+    <form method="post" action="/recipes/{{ recipe.id }}/tags/{{ tag.id }}/delete" class="tag-remove-form" onsubmit="return confirm('Ta bort taggen {{ tag.name }}?');">
+      <button type="submit" class="tag-remove-btn" aria-label="Ta bort tagg {{ tag.name }}">&times;</button>
+    </form>
+    {% endif %}
+  </span>
+  {% endfor %}
+  {% if is_owner %}
+  <form method="post" action="/recipes/{{ recipe.id }}/tags" class="tag-add-form">
+    <input type="text" name="tag_name" placeholder="Lägg till tagg..." required>
+    <button type="submit" class="btn btn-secondary">Lägg till</button>
+  </form>
+  {% endif %}
+</div>
+{% endif %}
+
+<p class="muted">
+  Skapat av {{ recipe.created_by.email }} · {{ recipe.created_at.strftime("%Y-%m-%d") }}
+  {% if recipe.updated_at and recipe.updated_at != recipe.created_at %}
+    · Senast ändrad {{ recipe.updated_at.strftime("%Y-%m-%d") }}
+  {% endif %}
+</p>
+
+{% if recipe.source_url %}
+<p><a class="btn btn-secondary" href="{{ recipe.source_url }}" target="_blank" rel="noopener">Visa originalrecept &rarr;</a></p>
+{% endif %}
+
+{% if recipe.image_path %}
+<img class="recipe-detail-image" src="/uploads/{{ recipe.image_path }}" alt="{{ recipe.title }}">
+{% endif %}
+
+{% if recipe.description %}<p>{{ recipe.description }}</p>{% endif %}
+
+<p class="muted">
+  {% if recipe.servings %}Portioner: {{ recipe.servings }} · {% endif %}
+  {% if recipe.prep_time_minutes %}Förberedelse: {{ recipe.prep_time_minutes }} min · {% endif %}
+  {% if recipe.cook_time_minutes %}Tillagning: {{ recipe.cook_time_minutes }} min{% endif %}
+</p>
+
+<div class="card">
+  <h2>Ingredienser</h2>
+  {% for group_name, items in grouped_ingredients %}
+  <div class="ingredient-group">
+    {% if group_name %}<h3 class="ingredient-group-title">{{ group_name }}</h3>{% endif %}
+    <ul class="ingredient-list">
+      {% for ingredient in items %}
+      <li>{{ ingredient.raw_text }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <h2>Gör så här</h2>
+  {% for group_name, numbered_steps in grouped_steps %}
+  <div class="step-group">
+    {% if group_name %}<h3 class="ingredient-group-title">{{ group_name }}</h3>{% endif %}
+    <ol class="step-list">
+      {% for step_number, step in numbered_steps %}
+      <li><span class="step-number">{{ step_number }}</span><span class="step-text">{{ step.text }}</span></li>
+      {% endfor %}
+    </ol>
+  </div>
+  {% endfor %}
+</div>
+
+{% if recipe.notes %}
+<div class="card notes-card">
+  <h2>Mina anteckningar</h2>
+  <p>{{ recipe.notes }}</p>
+</div>
+{% endif %}
+
+<div class="card">
+  <h2>Betyg</h2>
+  {% if avg_rating %}
+  <p>{{ "%.1f"|format(avg_rating) }} / 5 <span class="muted">({{ rating_count }} betyg)</span></p>
+  {% else %}
+  <p class="muted">Inga betyg än.</p>
+  {% endif %}
+  {% if current_user %}
+  <form method="post" action="/recipes/{{ recipe.id }}/rating" class="rating-form">
+    {% for value in range(1, 6) %}
+    <button type="submit" name="score" value="{{ value }}" class="rating-star {{ 'is-active' if user_rating and value <= user_rating else '' }}" aria-label="Betygsätt {{ value }} av 5">&#9733;</button>
+    {% endfor %}
+  </form>
+  {% if user_rating %}<p class="muted">Du har betygsatt: {{ user_rating }} / 5</p>{% endif %}
+  {% endif %}
+</div>
+
+{% if is_owner %}
+<div style="display:flex; gap:0.5rem;">
+  <a class="btn" href="/recipes/{{ recipe.id }}/edit">Redigera</a>
+  <form method="post" action="/recipes/{{ recipe.id }}/delete" onsubmit="return confirm('Radera detta recept?');">
+    <button class="btn btn-danger" type="submit">Radera</button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

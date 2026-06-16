@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Logga in - RecipeKing{% endblock %}
+{% block content %}
+<h1>Logga in</h1>
+<form method="post" action="/login" class="card" style="max-width:400px;">
+  <div class="field">
+    <label for="email">E-post</label>
+    <input type="email" id="email" name="email" required>
+  </div>
+  <div class="field">
+    <label for="password">Lösenord</label>
+    <input type="password" id="password" name="password" required>
+  </div>
+  <button class="btn" type="submit">Logga in</button>
+  <p class="muted">Inget konto? <a href="/register">Registrera dig</a></p>
+</form>
+{% endblock %}

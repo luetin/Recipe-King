@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}RecipeKing{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="/recipes">🍲 RecipeKing</a>
+      <nav>
+        {% if current_user %}
+          <a href="/recipes">Recept</a>
+          <a href="/recipes/new">Nytt recept</a>
+          <a href="/recipes/import/url">Importera från URL</a>
+          <a href="/recipes/import/file">Importera fil</a>
+          <form action="/logout" method="post" style="display:inline">
+            <button class="btn btn-secondary" type="submit" style="background:transparent;color:white;border-color:white;">Logga ut ({{ current_user.email }})</button>
+          </form>
+        {% else %}
+          <a href="/login">Logga in</a>
+          <a href="/register">Registrera</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    {% if error %}
+      <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

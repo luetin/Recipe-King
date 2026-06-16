@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Importera fil - RecipeKing{% endblock %}
+{% block content %}
+<h1>Importera recept från fil</h1>
+<p class="muted">Ladda upp en PDF eller textfil med ett recept. Du får granska och justera innan det sparas.</p>
+<form method="post" action="/recipes/import/file" enctype="multipart/form-data" class="card" style="max-width:500px;">
+  <div class="field">
+    <label for="file">Fil (PDF eller .txt)</label>
+    <input type="file" id="file" name="file" accept=".pdf,.txt" required>
+  </div>
+  <button class="btn" type="submit">Tolka fil</button>
+</form>
+{% endblock %}

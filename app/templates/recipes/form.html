@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}{{ "Redigera recept" if recipe else "Nytt recept" }} - RecipeKing{% endblock %}
+{% block content %}
+<h1>{{ "Redigera recept" if recipe else "Nytt recept" }}</h1>
+
+{% if prefill_notice %}
+<div class="alert" style="background:#eef6ec;border:1px solid #cfe3c8;color:#2e5a27;">{{ prefill_notice }}</div>
+{% endif %}
+
+<form method="post" action="{{ form_action }}" enctype="multipart/form-data" class="card">
+  <div class="field">
+    <label for="title">Titel</label>
+    <input type="text" id="title" name="title" required value="{{ recipe.title if recipe else (values.title if values else '') }}">
+  </div>
+
+  <div class="field">
+    <label for="description">Beskrivning</label>
+    <textarea id="description" name="description">{{ recipe.description if recipe else (values.description if values else '') }}</textarea>
+  </div>
+
+  <div class="field">
+    <label for="servings">Portioner</label>
+    <input type="text" id="servings" name="servings" value="{{ recipe.servings if recipe else (values.servings if values else '') }}">
+  </div>
+
+  <div class="field">
+    <label for="prep_time_minutes">Förberedelsetid (minuter)</label>
+    <input type="number" id="prep_time_minutes" name="prep_time_minutes" value="{{ recipe.prep_time_minutes if recipe else (values.prep_time_minutes if values else '') }}">
+  </div>
+
+  <div class="field">
+    <label for="cook_time_minutes">Tillagningstid (minuter)</label>
+    <input type="number" id="cook_time_minutes" name="cook_time_minutes" value="{{ recipe.cook_time_minutes if recipe else (values.cook_time_minutes if values else '') }}">
+  </div>
+
+  <div class="field">
+    <label for="ingredients_text">Ingredienser (en per rad)</label>
+    <p class="muted">Tips: lägg en rad som slutar med ":" för att skapa en kategori, t.ex. "Sås:" eller "Fisk:".</p>
+    <textarea id="ingredients_text" name="ingredients_text" rows="10" placeholder="Sås:&#10;2 dl crème fraiche&#10;1 msk dijonsenap&#10;&#10;Fisk:&#10;500 g laxfilé">{% if recipe %}{% set ns = namespace(last_group=none) %}{% for ing in recipe.ingredients %}{% if ing.group_name != ns.last_group and ing.group_name %}{{ ing.group_name }}:
+{% endif %}{% set ns.last_group = ing.group_name %}{{ ing.raw_text }}
+{% endfor %}{% elif values %}{{ values.ingredients_text }}{% endif %}</textarea>
+  </div>
+
+  <div class="field">
+    <label for="steps_text">Gör så här (en per rad)</label>
+    <p class="muted">Tips: lägg en rad som slutar med ":" för att skapa en kategori, t.ex. "Tartarsås:".</p>
+    <textarea id="steps_text" name="steps_text" rows="8" placeholder="Sås:&#10;Blanda mjöl och ägg.&#10;Vispa i mjölk.&#10;&#10;Stekning:&#10;Stek i smör.">{% if recipe %}{% set ns2 = namespace(last_group=none) %}{% for step in recipe.steps %}{% if step.group_name != ns2.last_group and step.group_name %}{{ step.group_name }}:
+{% endif %}{% set ns2.last_group = step.group_name %}{{ step.text }}
+{% endfor %}{% elif values %}{{ values.steps_text }}{% endif %}</textarea>
+  </div>
+
+  <div class="field">
+    <label for="notes">Mina anteckningar</label>
+    <textarea id="notes" name="notes" rows="4" placeholder="T.ex. egna justeringar, vad som funkade bra...">{{ recipe.notes if recipe else (values.notes if values else '') }}</textarea>
+  </div>
+
+  <div class="field">
+    <label for="tags_text">Taggar (kommaseparerade)</label>
+    <input type="text" id="tags_text" name="tags_text" placeholder="middag, fisk" value="{% if recipe %}{{ recipe.tags|map(attribute='name')|join(', ') }}{% elif values %}{{ values.tags_text or '' }}{% endif %}">
+  </div>
+
+  <div class="field">
+    <label for="image">Bild</label>
+    <input type="file" id="image" name="image" accept="image/*">
+    {% if recipe and recipe.image_path %}
+      <p class="muted">Nuvarande bild behålls om ingen ny väljs.</p>
+    {% elif prefill_image_path %}
+      <img src="/uploads/{{ prefill_image_path }}" alt="" style="max-width:200px;display:block;margin:0.5rem 0;">
+      <p class="muted">Hämtad bild behålls om du inte väljer en ny.</p>
+      <input type="hidden" name="prefill_image_path" value="{{ prefill_image_path }}">
+    {% endif %}
+  </div>
+
+  {% if prefill_source_url %}
+  <input type="hidden" name="source_url" value="{{ prefill_source_url }}">
+  {% endif %}
+
+  <button class="btn" type="submit">Spara recept</button>
+</form>
+{% endblock %}
