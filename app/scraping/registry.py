@@ -16,6 +16,7 @@ ALLOWED_DOMAINS = {
     "www.koket.se",
     "recept.nu",
     "www.recept.nu",
+    "alltommat.expressen.se",
 }
 
 _json_ld_scraper = JsonLdScraper()
