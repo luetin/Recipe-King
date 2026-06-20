@@ -133,6 +133,7 @@ def recipe_detail(
     avg_rating, rating_count = recipe_service.average_rating(recipe)
     user_rating = recipe_service.get_user_rating(recipe, current_user.id) if current_user else None
     serving_logs = recipe_service.list_serving_logs(db, recipe_id)
+    note_logs = recipe_service.list_note_logs(db, recipe_id)
 
     from datetime import date as date_type
     today = date_type.today().isoformat()
@@ -149,6 +150,7 @@ def recipe_detail(
             "rating_count": rating_count,
             "user_rating": user_rating,
             "serving_logs": serving_logs,
+            "note_logs": note_logs,
             "today": today,
         },
     )
@@ -263,6 +265,32 @@ def rate_recipe(
         raise HTTPException(status_code=404, detail="Recipe not found")
     recipe_service.set_rating(db, recipe, current_user.id, score)
     return RedirectResponse(url=f"/recipes/{recipe.id}", status_code=303)
+
+
+@router.post("/{recipe_id}/notes")
+def add_note(
+    recipe_id: int,
+    text: str = Form(...),
+    current_user: User = Depends(require_login),
+    db: Session = Depends(get_db),
+):
+    recipe = recipe_service.get_recipe(db, recipe_id)
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+    if text.strip():
+        recipe_service.add_note_log(db, recipe, current_user.id, text)
+    return RedirectResponse(url=f"/recipes/{recipe_id}", status_code=303)
+
+
+@router.post("/{recipe_id}/notes/{log_id}/delete")
+def delete_note(
+    recipe_id: int,
+    log_id: int,
+    current_user: User = Depends(require_login),
+    db: Session = Depends(get_db),
+):
+    recipe_service.delete_note_log(db, log_id, current_user.id)
+    return RedirectResponse(url=f"/recipes/{recipe_id}", status_code=303)
 
 
 @router.post("/{recipe_id}/servings")

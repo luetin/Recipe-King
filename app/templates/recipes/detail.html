@@ -77,10 +77,42 @@
   {% endfor %}
 </div>
 
-{% if recipe.notes %}
-<div class="card notes-card">
-  <h2>Mina anteckningar</h2>
-  <p>{{ recipe.notes }}</p>
+{% if current_user %}
+<div class="card log-card">
+  <h2>Anteckningar</h2>
+  <form method="post" action="/recipes/{{ recipe.id }}/notes" class="log-add-form">
+    <textarea name="text" placeholder="Skriv en anteckning..." rows="2" required></textarea>
+    <button type="submit" class="btn btn-secondary">Spara</button>
+  </form>
+  {% if recipe.notes or note_logs %}
+  <ul class="log-list">
+    {% if recipe.notes %}
+    <li class="log-entry log-entry--legacy">
+      <div class="log-icon">&#128221;</div>
+      <div class="log-body">
+        <p class="log-text">{{ recipe.notes }}</p>
+        <span class="log-meta muted">Ursprunglig anteckning</span>
+      </div>
+    </li>
+    {% endif %}
+    {% for entry in note_logs %}
+    <li class="log-entry">
+      <div class="log-icon">&#128221;</div>
+      <div class="log-body">
+        <p class="log-text">{{ entry.text }}</p>
+        <span class="log-meta muted">{{ entry.created_at.strftime("%d %b %Y %H:%M") }} · {{ entry.user.email }}</span>
+      </div>
+      {% if entry.user_id == current_user.id %}
+      <form method="post" action="/recipes/{{ recipe.id }}/notes/{{ entry.id }}/delete" class="log-delete-form">
+        <button type="submit" class="tag-remove-btn" aria-label="Ta bort">&times;</button>
+      </form>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted log-empty">Inga anteckningar än.</p>
+  {% endif %}
 </div>
 {% endif %}
 
@@ -102,22 +134,28 @@
 </div>
 
 {% if current_user %}
-<div class="card serving-log-card">
-  <h2>&#128197; Bjudhistorik</h2>
-  <form method="post" action="/recipes/{{ recipe.id }}/servings" class="serving-log-form">
+<div class="card log-card">
+  <h2>Bjudhistorik</h2>
+  <form method="post" action="/recipes/{{ recipe.id }}/servings" class="log-add-form log-add-form--serving">
     <input type="date" name="served_on" value="{{ today }}" required>
-    <input type="text" name="note" placeholder="Anteckning (valfri)" style="flex:1;">
+    <input type="text" name="note" placeholder="Anteckning (valfri)">
     <button type="submit" class="btn btn-secondary">Lägg till</button>
   </form>
   {% if serving_logs %}
-  <ul class="serving-log-list">
+  <ul class="log-list">
     {% for entry in serving_logs %}
-    <li class="serving-log-entry">
-      <span class="serving-log-date">{{ entry.served_on.strftime("%d %b %Y") }}</span>
-      {% if entry.note %}<span class="serving-log-note">{{ entry.note }}</span>{% endif %}
-      <span class="serving-log-meta muted">{{ entry.user.email }}</span>
-      {% if current_user and entry.user_id == current_user.id %}
-      <form method="post" action="/recipes/{{ recipe.id }}/servings/{{ entry.id }}/delete" class="serving-log-delete">
+    <li class="log-entry">
+      <div class="log-icon log-icon--date">
+        <span class="log-cal-month">{{ entry.served_on.strftime("%b") }}</span>
+        <span class="log-cal-day">{{ entry.served_on.strftime("%d") }}</span>
+      </div>
+      <div class="log-body">
+        <span class="log-date-full">{{ entry.served_on.strftime("%d %B %Y") }}</span>
+        {% if entry.note %}<p class="log-text">{{ entry.note }}</p>{% endif %}
+        <span class="log-meta muted">{{ entry.user.email }}</span>
+      </div>
+      {% if entry.user_id == current_user.id %}
+      <form method="post" action="/recipes/{{ recipe.id }}/servings/{{ entry.id }}/delete" class="log-delete-form">
         <button type="submit" class="tag-remove-btn" aria-label="Ta bort">&times;</button>
       </form>
       {% endif %}
@@ -125,7 +163,7 @@
     {% endfor %}
   </ul>
   {% else %}
-  <p class="muted">Ingen historik än.</p>
+  <p class="muted log-empty">Ingen historik än.</p>
   {% endif %}
 </div>
 {% endif %}

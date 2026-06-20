@@ -1,7 +1,7 @@
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session, joinedload
 
-from app.models import Ingredient, Rating, Recipe, ServingLog, Step, Tag, recipe_tags
+from app.models import Ingredient, NoteLog, Rating, Recipe, ServingLog, Step, Tag, recipe_tags
 
 
 def list_all_tags(db: Session) -> list[tuple[str, int]]:
@@ -233,5 +233,30 @@ def list_serving_logs(db: Session, recipe_id: int) -> list[ServingLog]:
         db.query(ServingLog)
         .filter(ServingLog.recipe_id == recipe_id)
         .order_by(ServingLog.served_on.desc(), ServingLog.created_at.desc())
+        .all()
+    )
+
+
+def add_note_log(db: Session, recipe: Recipe, user_id: int, text: str) -> NoteLog:
+    from datetime import datetime
+    entry = NoteLog(recipe_id=recipe.id, user_id=user_id, text=text.strip(), created_at=datetime.utcnow())
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return entry
+
+
+def delete_note_log(db: Session, log_id: int, user_id: int) -> None:
+    entry = db.query(NoteLog).filter(NoteLog.id == log_id, NoteLog.user_id == user_id).first()
+    if entry:
+        db.delete(entry)
+        db.commit()
+
+
+def list_note_logs(db: Session, recipe_id: int) -> list[NoteLog]:
+    return (
+        db.query(NoteLog)
+        .filter(NoteLog.recipe_id == recipe_id)
+        .order_by(NoteLog.created_at.desc())
         .all()
     )

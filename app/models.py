@@ -54,6 +54,7 @@ class Recipe(Base):
     tags: Mapped[list["Tag"]] = relationship(secondary=recipe_tags, back_populates="recipes")
     ratings: Mapped[list["Rating"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     servings_log: Mapped[list["ServingLog"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
+    notes_log: Mapped[list["NoteLog"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
 
 
 class Ingredient(Base):
@@ -106,6 +107,19 @@ class Rating(Base):
     )
 
     recipe: Mapped["Recipe"] = relationship(back_populates="ratings")
+    user: Mapped["User"] = relationship()
+
+
+class NoteLog(Base):
+    __tablename__ = "note_log"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipes.id"), nullable=False, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+
+    recipe: Mapped["Recipe"] = relationship(back_populates="notes_log")
     user: Mapped["User"] = relationship()
 
 
