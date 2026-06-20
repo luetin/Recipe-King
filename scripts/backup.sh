@@ -15,3 +15,7 @@ OUT="backups/recipeking_${TIMESTAMP}.sql"
 docker compose exec -T db pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB" > "$OUT"
 
 echo "Backup saved to $OUT"
+
+# Remove backups older than 30 days
+find backups -name "recipeking_*.sql" -mtime +30 -delete
+echo "Old backups cleaned up"
