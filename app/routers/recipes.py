@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -25,15 +25,15 @@ def _split_tags(text: str) -> list[str]:
 def list_recipes(
     request: Request,
     q: str | None = None,
-    tag: str | None = None,
+    tag: list[str] = Query(default=[]),
     db: Session = Depends(get_db),
     current_user: User | None = Depends(get_current_user),
 ):
-    recipes = recipe_service.list_recipes(db, search=q, tag=tag)
+    recipes = recipe_service.list_recipes(db, search=q, tags=tag)
     all_tags = recipe_service.list_all_tags(db)
     return templates.TemplateResponse(
         "recipes/list.html",
-        {"request": request, "current_user": current_user, "recipes": recipes, "search": q, "active_tag": tag, "all_tags": all_tags},
+        {"request": request, "current_user": current_user, "recipes": recipes, "search": q, "active_tags": tag, "all_tags": all_tags},
     )
 
 

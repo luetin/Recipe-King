@@ -4,23 +4,40 @@
 <h1>Recept</h1>
 <form method="get" action="/recipes" class="field" style="max-width:400px;">
   <input type="text" name="q" placeholder="Sök på titel, beskrivning eller tagg..." value="{{ search or '' }}">
-  {% if active_tag %}<input type="hidden" name="tag" value="{{ active_tag }}">{% endif %}
+  {% for t in active_tags %}
+  <input type="hidden" name="tag" value="{{ t }}">
+  {% endfor %}
 </form>
 
 {% if all_tags %}
 <div class="tag-filter-row">
   {% for tag_name, tag_count in all_tags %}
-  {% if active_tag == tag_name %}
-  <a href="/recipes{% if search %}?q={{ search }}{% endif %}" class="tag-chip tag-chip--active" title="Rensa filter">{{ tag_name }}</a>
+  {% set is_active = tag_name in active_tags %}
+  {% if is_active %}
+    {# Build URL without this tag (deselect) #}
+    {% set other_tags = active_tags | reject("equalto", tag_name) | list %}
+    {% set tag_url = "/recipes?" %}
+    {% if search %}{% set tag_url = tag_url ~ "q=" ~ search ~ "&" %}{% endif %}
+    {% for t in other_tags %}{% set tag_url = tag_url ~ "tag=" ~ t ~ "&" %}{% endfor %}
+    <a href="{{ tag_url.rstrip('&?') or '/recipes' }}" class="tag-chip tag-chip--active">{{ tag_name }}</a>
   {% else %}
-  <a href="/recipes?tag={{ tag_name | urlencode }}{% if search %}&q={{ search }}{% endif %}" class="tag-chip tag-chip--link">{{ tag_name }}</a>
+    {# Build URL adding this tag #}
+    {% set tag_url = "/recipes?" %}
+    {% if search %}{% set tag_url = tag_url ~ "q=" ~ search ~ "&" %}{% endif %}
+    {% for t in active_tags %}{% set tag_url = tag_url ~ "tag=" ~ t ~ "&" %}{% endfor %}
+    {% set tag_url = tag_url ~ "tag=" ~ tag_name %}
+    <a href="{{ tag_url }}" class="tag-chip tag-chip--link">{{ tag_name }}</a>
   {% endif %}
   {% endfor %}
 </div>
 {% endif %}
 
-{% if active_tag %}
-<p class="muted" style="margin-top:.25rem;">Filtrerat på tagg: <strong>{{ active_tag }}</strong> — <a href="/recipes{% if search %}?q={{ search }}{% endif %}">rensa filter</a></p>
+{% if active_tags %}
+<p class="muted" style="margin-top:.25rem;">
+  Filtrerat på:
+  {% for t in active_tags %}<strong>{{ t }}</strong>{% if not loop.last %} + {% endif %}{% endfor %}
+  — <a href="/recipes{% if search %}?q={{ search }}{% endif %}">rensa filter</a>
+</p>
 {% endif %}
 
 {% if recipes %}

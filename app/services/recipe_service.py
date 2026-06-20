@@ -16,7 +16,7 @@ def list_all_tags(db: Session) -> list[tuple[str, int]]:
     return [(name, cnt) for name, cnt in rows]
 
 
-def list_recipes(db: Session, search: str | None = None, tag: str | None = None) -> list[Recipe]:
+def list_recipes(db: Session, search: str | None = None, tags: list[str] | None = None) -> list[Recipe]:
     query = db.query(Recipe).options(joinedload(Recipe.created_by), joinedload(Recipe.tags))
     if search:
         query = query.filter(
@@ -26,7 +26,7 @@ def list_recipes(db: Session, search: str | None = None, tag: str | None = None)
                 Recipe.tags.any(Tag.name.ilike(f"%{search}%")),
             )
         )
-    if tag:
+    for tag in (tags or []):
         query = query.filter(Recipe.tags.any(Tag.name == tag))
     return query.order_by(Recipe.created_at.desc()).all()
 
