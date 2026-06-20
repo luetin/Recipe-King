@@ -30,9 +30,10 @@ def list_recipes(
     current_user: User | None = Depends(get_current_user),
 ):
     recipes = recipe_service.list_recipes(db, search=q, tag=tag)
+    all_tags = recipe_service.list_all_tags(db)
     return templates.TemplateResponse(
         "recipes/list.html",
-        {"request": request, "current_user": current_user, "recipes": recipes, "search": q, "active_tag": tag},
+        {"request": request, "current_user": current_user, "recipes": recipes, "search": q, "active_tag": tag, "all_tags": all_tags},
     )
 
 

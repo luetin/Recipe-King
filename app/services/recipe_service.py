@@ -1,7 +1,19 @@
-from sqlalchemy import or_
+from sqlalchemy import func, or_
 from sqlalchemy.orm import Session, joinedload
 
-from app.models import Ingredient, Rating, Recipe, Step, Tag
+from app.models import Ingredient, Rating, Recipe, Step, Tag, recipe_tags
+
+
+def list_all_tags(db: Session) -> list[tuple[str, int]]:
+    """Return all tags sorted by usage count descending, as (name, count) tuples."""
+    rows = (
+        db.query(Tag.name, func.count(recipe_tags.c.recipe_id).label("cnt"))
+        .outerjoin(recipe_tags, Tag.id == recipe_tags.c.tag_id)
+        .group_by(Tag.id, Tag.name)
+        .order_by(func.count(recipe_tags.c.recipe_id).desc(), Tag.name)
+        .all()
+    )
+    return [(name, cnt) for name, cnt in rows]
 
 
 def list_recipes(db: Session, search: str | None = None, tag: str | None = None) -> list[Recipe]:

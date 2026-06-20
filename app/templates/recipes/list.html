@@ -7,8 +7,20 @@
   {% if active_tag %}<input type="hidden" name="tag" value="{{ active_tag }}">{% endif %}
 </form>
 
+{% if all_tags %}
+<div class="tag-filter-row">
+  {% for tag_name, tag_count in all_tags %}
+  {% if active_tag == tag_name %}
+  <a href="/recipes{% if search %}?q={{ search }}{% endif %}" class="tag-chip tag-chip--active" title="Rensa filter">{{ tag_name }}</a>
+  {% else %}
+  <a href="/recipes?tag={{ tag_name | urlencode }}{% if search %}&q={{ search }}{% endif %}" class="tag-chip tag-chip--link">{{ tag_name }}</a>
+  {% endif %}
+  {% endfor %}
+</div>
+{% endif %}
+
 {% if active_tag %}
-<p>Filtrerat på tagg: <span class="tag-chip">{{ active_tag }}</span> <a href="/recipes" class="muted">(rensa filter)</a></p>
+<p class="muted" style="margin-top:.25rem;">Filtrerat på tagg: <strong>{{ active_tag }}</strong> — <a href="/recipes{% if search %}?q={{ search }}{% endif %}">rensa filter</a></p>
 {% endif %}
 
 {% if recipes %}

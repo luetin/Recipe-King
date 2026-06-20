@@ -138,6 +138,34 @@ header.site-header nav {
   background: #e8d8c9;
 }
 
+.tag-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.75rem 0 0.25rem;
+}
+
+.tag-chip--link {
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tag-chip--link:hover {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.tag-chip--active {
+  background: var(--color-primary);
+  color: #fff;
+  cursor: pointer;
+}
+
+.tag-chip--active:hover {
+  background: var(--color-primary-dark);
+  color: #fff;
+}
+
 .tag-chip-wrap {
   display: inline-flex;
   align-items: center;
