@@ -384,3 +384,58 @@ textarea {
     align-items: flex-start;
   }
 }
+
+/* Serving log */
+.serving-log-form {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.serving-log-form input[type="date"],
+.serving-log-form input[type="text"] {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9rem;
+}
+
+.serving-log-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.serving-log-entry {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.6rem;
+  background: #faf6f3;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.serving-log-date {
+  font-weight: 600;
+  color: var(--color-primary-dark);
+  white-space: nowrap;
+}
+
+.serving-log-note {
+  flex: 1;
+  color: var(--color-text);
+}
+
+.serving-log-meta {
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.serving-log-delete {
+  display: inline;
+  margin-left: auto;
+}

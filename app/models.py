@@ -1,6 +1,6 @@
-from datetime import datetime
+from datetime import date, datetime
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Table, Text, UniqueConstraint
+from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String, Table, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -53,6 +53,7 @@ class Recipe(Base):
     )
     tags: Mapped[list["Tag"]] = relationship(secondary=recipe_tags, back_populates="recipes")
     ratings: Mapped[list["Rating"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
+    servings_log: Mapped[list["ServingLog"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
 
 
 class Ingredient(Base):
@@ -105,4 +106,18 @@ class Rating(Base):
     )
 
     recipe: Mapped["Recipe"] = relationship(back_populates="ratings")
+    user: Mapped["User"] = relationship()
+
+
+class ServingLog(Base):
+    __tablename__ = "serving_log"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    recipe_id: Mapped[int] = mapped_column(ForeignKey("recipes.id"), nullable=False, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    served_on: Mapped[date] = mapped_column(Date, nullable=False)
+    note: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+
+    recipe: Mapped["Recipe"] = relationship(back_populates="servings_log")
     user: Mapped["User"] = relationship()
