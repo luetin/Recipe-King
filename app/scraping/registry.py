@@ -4,11 +4,8 @@ import httpx
 
 from app.scraping.base import ScrapeError, ScraperResult
 from app.scraping.jsonld import JsonLdScraper
+from app.scraping.sites.lindasbakskola import LindasBakSkolaScraper
 
-# Domains confirmed to embed schema.org/Recipe JSON-LD, verified by fetching
-# live recipe pages: ica.se and koket.se (recept.nu permanently redirects to
-# koket.se). coop.se renders recipe content client-side via React with no
-# server-rendered markup, so it isn't supported without a headless browser.
 ALLOWED_DOMAINS = {
     "ica.se",
     "www.ica.se",
@@ -17,6 +14,14 @@ ALLOWED_DOMAINS = {
     "recept.nu",
     "www.recept.nu",
     "alltommat.expressen.se",
+    "lindasbakskola.se",
+    "www.lindasbakskola.se",
+}
+
+# Sites that need a custom HTML parser instead of (or as fallback after) JSON-LD
+_CUSTOM_SCRAPERS = {
+    "lindasbakskola.se": LindasBakSkolaScraper(),
+    "www.lindasbakskola.se": LindasBakSkolaScraper(),
 }
 
 _json_ld_scraper = JsonLdScraper()
@@ -32,7 +37,7 @@ def is_supported(url: str) -> bool:
 
 def scrape_url(url: str) -> ScraperResult:
     if not is_supported(url):
-        supported = ", ".join(sorted({d for d in ALLOWED_DOMAINS if d.startswith("www.")}))
+        supported = ", ".join(sorted(ALLOWED_DOMAINS))
         raise ScrapeError(f"Den här sajten stöds inte. Stödda sajter: {supported}")
 
     try:
@@ -46,7 +51,15 @@ def scrape_url(url: str) -> ScraperResult:
     except httpx.HTTPError as exc:
         raise ScrapeError(f"Kunde inte hämta sidan: {exc}") from exc
 
-    result = _json_ld_scraper.scrape(response.text, str(response.url))
+    domain = _domain(str(response.url))
+    html = response.text
+
+    # Use custom scraper if available, otherwise fall back to JSON-LD
+    if domain in _CUSTOM_SCRAPERS:
+        result = _CUSTOM_SCRAPERS[domain].scrape(html, str(response.url))
+    else:
+        result = _json_ld_scraper.scrape(html, str(response.url))
+
     if not result or not result.ingredients:
         raise ScrapeError("Kunde inte tolka receptet från den här sidan.")
     return result
