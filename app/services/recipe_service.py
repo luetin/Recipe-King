@@ -1,4 +1,4 @@
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, select as sa_select
 from sqlalchemy.orm import Session, joinedload
 
 from app.models import Ingredient, NoteLog, Rating, Recipe, ServingLog, Step, Tag, recipe_tags
@@ -16,7 +16,12 @@ def list_all_tags(db: Session) -> list[tuple[str, int]]:
     return [(name, cnt) for name, cnt in rows]
 
 
-def list_recipes(db: Session, search: str | None = None, tags: list[str] | None = None) -> list[Recipe]:
+def list_recipes(
+    db: Session,
+    search: str | None = None,
+    tags: list[str] | None = None,
+    sort: str = "created_desc",
+) -> list[Recipe]:
     query = db.query(Recipe).options(joinedload(Recipe.created_by), joinedload(Recipe.tags))
     if search:
         query = query.filter(
@@ -24,11 +29,26 @@ def list_recipes(db: Session, search: str | None = None, tags: list[str] | None 
                 Recipe.title.ilike(f"%{search}%"),
                 Recipe.description.ilike(f"%{search}%"),
                 Recipe.tags.any(Tag.name.ilike(f"%{search}%")),
+                Recipe.notes_log.any(NoteLog.text.ilike(f"%{search}%")),
+                Recipe.servings_log.any(ServingLog.note.ilike(f"%{search}%")),
             )
         )
     for tag in (tags or []):
         query = query.filter(Recipe.tags.any(Tag.name == tag))
-    return query.order_by(Recipe.created_at.desc()).all()
+
+    if sort == "title_asc":
+        query = query.order_by(Recipe.title.asc())
+    elif sort == "last_served_desc":
+        last_served_sub = (
+            sa_select(func.max(ServingLog.served_on))
+            .where(ServingLog.recipe_id == Recipe.id)
+            .correlate(Recipe)
+            .scalar_subquery()
+        )
+        query = query.order_by(last_served_sub.desc().nullslast(), Recipe.created_at.desc())
+    else:
+        query = query.order_by(Recipe.created_at.desc())
+    return query.all()
 
 
 def get_recipe(db: Session, recipe_id: int) -> Recipe | None:

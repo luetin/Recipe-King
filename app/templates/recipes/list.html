@@ -2,11 +2,16 @@
 {% block title %}Recept - RecipeKing{% endblock %}
 {% block content %}
 <h1>Recept</h1>
-<form method="get" action="/recipes" class="field" style="max-width:400px;">
-  <input type="text" name="q" placeholder="Sök på titel, beskrivning eller tagg..." value="{{ search or '' }}">
+<form method="get" action="/recipes" class="recipe-search-form">
+  <input type="text" name="q" placeholder="Sök på titel, beskrivning, tagg eller anteckning..." value="{{ search or '' }}">
   {% for t in active_tags %}
   <input type="hidden" name="tag" value="{{ t }}">
   {% endfor %}
+  <select name="sort" onchange="this.form.submit()" class="sort-select">
+    <option value="created_desc" {% if sort == 'created_desc' %}selected{% endif %}>Senast tillagda</option>
+    <option value="title_asc" {% if sort == 'title_asc' %}selected{% endif %}>A–Ö</option>
+    <option value="last_served_desc" {% if sort == 'last_served_desc' %}selected{% endif %}>Senast bjudit</option>
+  </select>
 </form>
 
 {% if all_tags %}
@@ -16,12 +21,14 @@
   {% if is_active %}
     {% set ns = namespace(url="/recipes?") %}
     {% if search %}{% set ns.url = ns.url ~ "q=" ~ search ~ "&" %}{% endif %}
+    {% if sort and sort != 'created_desc' %}{% set ns.url = ns.url ~ "sort=" ~ sort ~ "&" %}{% endif %}
     {% for t in active_tags %}{% if t != tag_name %}{% set ns.url = ns.url ~ "tag=" ~ t ~ "&" %}{% endif %}{% endfor %}
     {% set ns.url = ns.url.rstrip("?&") %}
     <a href="{{ ns.url or '/recipes' }}" class="tag-chip tag-chip--active" title="Ta bort filter">{{ tag_name }}</a>
   {% else %}
     {% set ns = namespace(url="/recipes?") %}
     {% if search %}{% set ns.url = ns.url ~ "q=" ~ search ~ "&" %}{% endif %}
+    {% if sort and sort != 'created_desc' %}{% set ns.url = ns.url ~ "sort=" ~ sort ~ "&" %}{% endif %}
     {% for t in active_tags %}{% set ns.url = ns.url ~ "tag=" ~ t ~ "&" %}{% endfor %}
     {% set ns.url = ns.url ~ "tag=" ~ tag_name %}
     <a href="{{ ns.url }}" class="tag-chip tag-chip--link">{{ tag_name }}</a>
@@ -34,7 +41,7 @@
 <p class="muted" style="margin-top:.25rem;">
   Filtrerat på:
   {% for t in active_tags %}<strong>{{ t }}</strong>{% if not loop.last %} + {% endif %}{% endfor %}
-  — <a href="/recipes{% if search %}?q={{ search }}{% endif %}">rensa filter</a>
+  — <a href="/recipes?{% if search %}q={{ search }}&{% endif %}{% if sort and sort != 'created_desc' %}sort={{ sort }}{% endif %}">rensa filter</a>
 </p>
 {% endif %}
 
@@ -55,7 +62,7 @@
       {% endfor %}
     </div>
     {% endif %}
-    <p class="muted">{{ recipe.created_by.email }}</p>
+    <p class="muted">{{ recipe.created_by.name }}</p>
   </a>
   {% endfor %}
 </div>

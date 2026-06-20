@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Mina samlingar - RecipeKing{% endblock %}
+{% block content %}
+<h1>Mina samlingar</h1>
+
+<div class="card" style="margin-bottom:1.5rem;">
+  <h2 style="margin-top:0;">Ny samling</h2>
+  <form method="post" action="/collections/new" style="display:flex; flex-direction:column; gap:0.5rem; max-width:440px;">
+    <input type="text" name="name" placeholder="Namn på samlingen..." required>
+    <textarea name="description" placeholder="Beskrivning (valfri)" rows="2"></textarea>
+    <div><button type="submit" class="btn">Skapa samling</button></div>
+  </form>
+</div>
+
+{% if collections %}
+<div class="recipe-grid">
+  {% for col in collections %}
+  <a class="card recipe-card" href="/collections/{{ col.id }}" style="text-decoration:none; color:inherit;">
+    <h3 style="margin-top:0.25rem;">{{ col.name }}</h3>
+    {% if col.description %}<p class="muted" style="font-size:0.9rem;">{{ col.description }}</p>{% endif %}
+    <p class="muted">{{ col.recipes | length }} recept</p>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<p class="muted">Du har inga samlingar än. Skapa en ovan och lägg sedan till recept från receptsidorna.</p>
+{% endif %}
+{% endblock %}

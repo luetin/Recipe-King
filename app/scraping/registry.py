@@ -16,6 +16,10 @@ ALLOWED_DOMAINS = {
     "alltommat.expressen.se",
     "lindasbakskola.se",
     "www.lindasbakskola.se",
+    "arla.se",
+    "www.arla.se",
+    "coop.se",
+    "www.coop.se",
 }
 
 # Sites that need a custom HTML parser instead of (or as fallback after) JSON-LD

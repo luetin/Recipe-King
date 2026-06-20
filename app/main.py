@@ -7,7 +7,7 @@ from fastapi.templating import Jinja2Templates
 
 from app.config import settings
 from app.deps import NotAuthenticated
-from app.routers import auth, recipes, scrape, upload
+from app.routers import auth, collections, profile, recipes, scrape, upload
 
 app = FastAPI(title="RecipeKing")
 templates = Jinja2Templates(directory="app/templates")
@@ -20,6 +20,8 @@ app.include_router(auth.router)
 app.include_router(upload.router)
 app.include_router(scrape.router)
 app.include_router(recipes.router)
+app.include_router(collections.router)
+app.include_router(profile.router)
 
 
 @app.exception_handler(NotAuthenticated)

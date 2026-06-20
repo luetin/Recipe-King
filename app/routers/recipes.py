@@ -7,6 +7,7 @@ from app.database import get_db
 from app.deps import get_current_user, require_login
 from app.models import Recipe, User
 from app.services import recipe_service
+from app.services import collection_service
 from app.services.image_service import save_uploaded_image
 
 router = APIRouter(prefix="/recipes", tags=["recipes"])
@@ -26,14 +27,23 @@ def list_recipes(
     request: Request,
     q: str | None = None,
     tag: list[str] = Query(default=[]),
+    sort: str = "created_desc",
     db: Session = Depends(get_db),
     current_user: User | None = Depends(get_current_user),
 ):
-    recipes = recipe_service.list_recipes(db, search=q, tags=tag)
+    recipes = recipe_service.list_recipes(db, search=q, tags=tag, sort=sort)
     all_tags = recipe_service.list_all_tags(db)
     return templates.TemplateResponse(
         "recipes/list.html",
-        {"request": request, "current_user": current_user, "recipes": recipes, "search": q, "active_tags": tag, "all_tags": all_tags},
+        {
+            "request": request,
+            "current_user": current_user,
+            "recipes": recipes,
+            "search": q,
+            "active_tags": tag,
+            "all_tags": all_tags,
+            "sort": sort,
+        },
     )
 
 
@@ -134,6 +144,7 @@ def recipe_detail(
     user_rating = recipe_service.get_user_rating(recipe, current_user.id) if current_user else None
     serving_logs = recipe_service.list_serving_logs(db, recipe_id)
     note_logs = recipe_service.list_note_logs(db, recipe_id)
+    user_collections = collection_service.list_collections(db, current_user.id) if current_user else []
 
     from datetime import date as date_type
     today = date_type.today().isoformat()
@@ -152,6 +163,7 @@ def recipe_detail(
             "serving_logs": serving_logs,
             "note_logs": note_logs,
             "today": today,
+            "user_collections": user_collections,
         },
     )
 

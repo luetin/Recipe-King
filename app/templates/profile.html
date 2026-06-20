@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Min profil - RecipeKing{% endblock %}
+{% block content %}
+<h1>Min profil</h1>
+
+{% if request.query_params.get('saved') %}
+<div class="alert" style="background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7;">Profilen sparades.</div>
+{% endif %}
+
+<div class="card" style="max-width:480px;">
+  <form method="post" action="/profile" style="display:flex; flex-direction:column; gap:1rem;">
+    <div class="field">
+      <label>E-post</label>
+      <input type="text" value="{{ current_user.email }}" disabled style="background:#f5f5f5; color:#666;">
+    </div>
+    <div class="field">
+      <label for="display_name">Visningsnamn</label>
+      <input type="text" id="display_name" name="display_name" value="{{ current_user.display_name or '' }}" placeholder="{{ current_user.email.split('@')[0] }}" maxlength="100">
+      <span class="muted" style="font-size:0.85rem;">Visas istället för e-post i gränssnittet. Lämna tomt för att använda användarnamnet.</span>
+    </div>
+
+    <hr style="border:none; border-top:1px solid var(--color-border); margin:0.25rem 0;">
+    <p class="muted" style="margin:0; font-size:0.9rem;">Byt lösenord (lämna tomt för att behålla nuvarande)</p>
+
+    <div class="field">
+      <label for="current_password">Nuvarande lösenord</label>
+      <input type="password" id="current_password" name="current_password" autocomplete="current-password">
+    </div>
+    <div class="field">
+      <label for="new_password">Nytt lösenord</label>
+      <input type="password" id="new_password" name="new_password" autocomplete="new-password">
+    </div>
+
+    <div><button type="submit" class="btn">Spara</button></div>
+  </form>
+</div>
+{% endblock %}

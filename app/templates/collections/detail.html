@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ collection.name }} - RecipeKing{% endblock %}
+{% block content %}
+<a href="/collections">&larr; Mina samlingar</a>
+<div style="display:flex; align-items:baseline; gap:1rem; flex-wrap:wrap; margin-top:0.5rem;">
+  <h1 style="margin:0;">{{ collection.name }}</h1>
+  <form method="post" action="/collections/{{ collection.id }}/delete" onsubmit="return confirm('Radera samlingen {{ collection.name }}?');">
+    <button type="submit" class="btn btn-danger" style="font-size:0.85rem; padding:0.3rem 0.8rem;">Radera samling</button>
+  </form>
+</div>
+{% if collection.description %}<p class="muted">{{ collection.description }}</p>{% endif %}
+
+{% if collection.recipes %}
+<div class="recipe-grid" style="margin-top:1rem;">
+  {% for recipe in collection.recipes %}
+  <div class="card recipe-card" style="position:relative;">
+    <a href="/recipes/{{ recipe.id }}" style="text-decoration:none; color:inherit; display:block;">
+      {% if recipe.image_path %}
+        <img src="/uploads/{{ recipe.image_path }}" alt="{{ recipe.title }}">
+      {% else %}
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/%3E" alt="">
+      {% endif %}
+      <h3>{{ recipe.title }}</h3>
+      {% if recipe.tags %}
+      <div class="tag-list">
+        {% for tag in recipe.tags %}
+        <span class="tag-chip">{{ tag.name }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </a>
+    <form method="post" action="/collections/{{ collection.id }}/recipes/{{ recipe.id }}/remove" style="margin-top:0.5rem;">
+      <button type="submit" class="btn btn-danger" style="font-size:0.8rem; padding:0.25rem 0.7rem; width:100%;">Ta bort från samling</button>
+    </form>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="muted" style="margin-top:1rem;">Inga recept i samlingen än. Öppna ett recept och välj "Lägg till i samling".</p>
+{% endif %}
+{% endblock %}

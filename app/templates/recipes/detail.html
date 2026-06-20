@@ -27,7 +27,7 @@
 {% endif %}
 
 <p class="muted">
-  Skapat av {{ recipe.created_by.email }} · {{ recipe.created_at.strftime("%Y-%m-%d") }}
+  Skapat av {{ recipe.created_by.name }} · {{ recipe.created_at.strftime("%Y-%m-%d") }}
   {% if recipe.updated_at and recipe.updated_at != recipe.created_at %}
     · Senast ändrad {{ recipe.updated_at.strftime("%Y-%m-%d") }}
   {% endif %}
@@ -100,7 +100,7 @@
       <div class="log-icon">&#128221;</div>
       <div class="log-body">
         <p class="log-text">{{ entry.text }}</p>
-        <span class="log-meta muted">{{ entry.created_at.strftime("%d %b %Y %H:%M") }} · {{ entry.user.email }}</span>
+        <span class="log-meta muted">{{ entry.created_at.strftime("%d %b %Y %H:%M") }} · {{ entry.user.name }}</span>
       </div>
       {% if entry.user_id == current_user.id %}
       <form method="post" action="/recipes/{{ recipe.id }}/notes/{{ entry.id }}/delete" class="log-delete-form">
@@ -152,7 +152,7 @@
       <div class="log-body">
         <span class="log-date-full">{{ entry.served_on.strftime("%d %B %Y") }}</span>
         {% if entry.note %}<p class="log-text">{{ entry.note }}</p>{% endif %}
-        <span class="log-meta muted">{{ entry.user.email }}</span>
+        <span class="log-meta muted">{{ entry.user.name }}</span>
       </div>
       {% if entry.user_id == current_user.id %}
       <form method="post" action="/recipes/{{ recipe.id }}/servings/{{ entry.id }}/delete" class="log-delete-form">
@@ -165,6 +165,26 @@
   {% else %}
   <p class="muted log-empty">Ingen historik än.</p>
   {% endif %}
+</div>
+{% endif %}
+
+{% if current_user and user_collections %}
+<div class="card">
+  <h2>Lägg till i samling</h2>
+  <div style="display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center;">
+    {% for col in user_collections %}
+    {% set in_col = recipe in col.recipes %}
+    {% if in_col %}
+    <form method="post" action="/collections/{{ col.id }}/recipes/{{ recipe.id }}/remove">
+      <button type="submit" class="tag-chip tag-chip--active" style="border:none;cursor:pointer;">{{ col.name }} ✕</button>
+    </form>
+    {% else %}
+    <form method="post" action="/collections/{{ col.id }}/recipes/{{ recipe.id }}/add">
+      <button type="submit" class="tag-chip tag-chip--link" style="border:none;cursor:pointer;">+ {{ col.name }}</button>
+    </form>
+    {% endif %}
+    {% endfor %}
+  </div>
 </div>
 {% endif %}
 

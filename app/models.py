@@ -12,6 +12,13 @@ recipe_tags = Table(
     Column("tag_id", ForeignKey("tags.id"), primary_key=True),
 )
 
+collection_recipes = Table(
+    "collection_recipes",
+    Base.metadata,
+    Column("collection_id", ForeignKey("collections.id"), primary_key=True),
+    Column("recipe_id", ForeignKey("recipes.id"), primary_key=True),
+)
+
 
 class User(Base):
     __tablename__ = "users"
@@ -19,9 +26,15 @@ class User(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    display_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
     recipes: Mapped[list["Recipe"]] = relationship(back_populates="created_by")
+    collections: Mapped[list["Collection"]] = relationship(back_populates="owner")
+
+    @property
+    def name(self) -> str:
+        return self.display_name or self.email.split("@")[0]
 
 
 class Recipe(Base):
@@ -55,6 +68,7 @@ class Recipe(Base):
     ratings: Mapped[list["Rating"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     servings_log: Mapped[list["ServingLog"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
     notes_log: Mapped[list["NoteLog"]] = relationship(back_populates="recipe", cascade="all, delete-orphan")
+    collections: Mapped[list["Collection"]] = relationship(secondary=collection_recipes, back_populates="recipes")
 
 
 class Ingredient(Base):
@@ -135,3 +149,16 @@ class ServingLog(Base):
 
     recipe: Mapped["Recipe"] = relationship(back_populates="servings_log")
     user: Mapped["User"] = relationship()
+
+
+class Collection(Base):
+    __tablename__ = "collections"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+
+    owner: Mapped["User"] = relationship(back_populates="collections")
+    recipes: Mapped[list["Recipe"]] = relationship(secondary=collection_recipes, back_populates="collections")

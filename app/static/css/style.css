@@ -522,3 +522,30 @@ textarea {
 .log-empty {
   margin-top: 0.25rem;
 }
+
+/* Recipe list search + sort row */
+.recipe-search-form {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  max-width: 600px;
+  margin-bottom: 0.5rem;
+}
+
+.recipe-search-form input[type="text"] {
+  flex: 1;
+  min-width: 180px;
+}
+
+.sort-select {
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: inherit;
+  background: white;
+  color: var(--color-text);
+  cursor: pointer;
+  width: auto;
+}

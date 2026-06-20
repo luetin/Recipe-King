@@ -29,7 +29,7 @@ def _find_recipe_node(data) -> dict | None:
             found = _find_recipe_node(item["@graph"])
             if found:
                 return found
-        item_type = item.get("@type")
+        item_type = item.get("@type") or item.get("type")
         types = _as_list(item_type)
         if any(str(t).lower() == "recipe" for t in types):
             return item
@@ -42,7 +42,8 @@ def _extract_instructions(raw) -> list[str]:
         if isinstance(entry, str):
             steps.append(_strip_html(entry))
         elif isinstance(entry, dict):
-            if entry.get("@type") == "HowToSection":
+            entry_type = entry.get("@type") or entry.get("type")
+            if entry_type == "HowToSection":
                 section_name = entry.get("name")
                 if section_name:
                     steps.append(f"{_strip_html(section_name)}:")
