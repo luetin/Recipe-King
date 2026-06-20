@@ -14,19 +14,17 @@
   {% for tag_name, tag_count in all_tags %}
   {% set is_active = tag_name in active_tags %}
   {% if is_active %}
-    {# Build URL without this tag (deselect) #}
-    {% set other_tags = active_tags | reject("equalto", tag_name) | list %}
-    {% set tag_url = "/recipes?" %}
-    {% if search %}{% set tag_url = tag_url ~ "q=" ~ search ~ "&" %}{% endif %}
-    {% for t in other_tags %}{% set tag_url = tag_url ~ "tag=" ~ t ~ "&" %}{% endfor %}
-    <a href="{{ tag_url.rstrip('&?') or '/recipes' }}" class="tag-chip tag-chip--active">{{ tag_name }}</a>
+    {% set ns = namespace(url="/recipes?") %}
+    {% if search %}{% set ns.url = ns.url ~ "q=" ~ search ~ "&" %}{% endif %}
+    {% for t in active_tags %}{% if t != tag_name %}{% set ns.url = ns.url ~ "tag=" ~ t ~ "&" %}{% endif %}{% endfor %}
+    {% set ns.url = ns.url.rstrip("?&") %}
+    <a href="{{ ns.url or '/recipes' }}" class="tag-chip tag-chip--active" title="Ta bort filter">{{ tag_name }}</a>
   {% else %}
-    {# Build URL adding this tag #}
-    {% set tag_url = "/recipes?" %}
-    {% if search %}{% set tag_url = tag_url ~ "q=" ~ search ~ "&" %}{% endif %}
-    {% for t in active_tags %}{% set tag_url = tag_url ~ "tag=" ~ t ~ "&" %}{% endfor %}
-    {% set tag_url = tag_url ~ "tag=" ~ tag_name %}
-    <a href="{{ tag_url }}" class="tag-chip tag-chip--link">{{ tag_name }}</a>
+    {% set ns = namespace(url="/recipes?") %}
+    {% if search %}{% set ns.url = ns.url ~ "q=" ~ search ~ "&" %}{% endif %}
+    {% for t in active_tags %}{% set ns.url = ns.url ~ "tag=" ~ t ~ "&" %}{% endfor %}
+    {% set ns.url = ns.url ~ "tag=" ~ tag_name %}
+    <a href="{{ ns.url }}" class="tag-chip tag-chip--link">{{ tag_name }}</a>
   {% endif %}
   {% endfor %}
 </div>
