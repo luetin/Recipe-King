@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from app.deps import require_login
 from app.models import User
 from app.scraping.base import ScrapeError
-from app.scraping.registry import scrape_url
+from app.scraping.registry import SITE_LABELS, scrape_url
 from app.services.image_service import save_image_from_url
 
 router = APIRouter(prefix="/recipes/import", tags=["import"])
@@ -22,7 +22,7 @@ async def import_url(
     except ScrapeError as exc:
         return templates.TemplateResponse(
             "recipes/import_url.html",
-            {"request": request, "current_user": current_user, "error": str(exc)},
+            {"request": request, "current_user": current_user, "error": str(exc), "site_labels": SITE_LABELS},
             status_code=400,
         )
 
@@ -30,7 +30,7 @@ async def import_url(
 
     values = {
         "title": result.title,
-        "description": "",
+        "description": result.description or "",
         "servings": result.servings or "",
         "prep_time_minutes": "",
         "cook_time_minutes": "",

@@ -9,6 +9,7 @@ class ScraperResult:
     image_url: str | None = None
     servings: str | None = None
     source_url: str = ""
+    description: str | None = None
 
 
 class ScrapeError(Exception):

@@ -4,6 +4,8 @@ import httpx
 
 from app.scraping.base import ScrapeError, ScraperResult
 from app.scraping.jsonld import JsonLdScraper
+from app.scraping.sites.bbqlovers import BbqLoversScraper
+from app.scraping.sites.kottbutiken import KottButikenScraper
 from app.scraping.sites.lindasbakskola import LindasBakSkolaScraper
 
 ALLOWED_DOMAINS = {
@@ -20,12 +22,33 @@ ALLOWED_DOMAINS = {
     "www.arla.se",
     "coop.se",
     "www.coop.se",
+    "bbqlovers.se",
+    "www.bbqlovers.se",
+    "kottbutiken.com",
+    "www.kottbutiken.com",
 }
+
+# Human-readable site labels shown on the import page
+SITE_LABELS: list[tuple[str, str]] = [
+    ("ICA", "ica.se"),
+    ("Arla", "arla.se"),
+    ("Coop", "coop.se"),
+    ("Köket.se", "koket.se"),
+    ("Recept.nu", "recept.nu"),
+    ("Allt om mat", "alltommat.expressen.se"),
+    ("Lindas bakskola", "lindasbakskola.se"),
+    ("BBQ Lovers", "bbqlovers.se"),
+    ("Köttbutiken", "kottbutiken.com"),
+]
 
 # Sites that need a custom HTML parser instead of (or as fallback after) JSON-LD
 _CUSTOM_SCRAPERS = {
     "lindasbakskola.se": LindasBakSkolaScraper(),
     "www.lindasbakskola.se": LindasBakSkolaScraper(),
+    "bbqlovers.se": BbqLoversScraper(),
+    "www.bbqlovers.se": BbqLoversScraper(),
+    "kottbutiken.com": KottButikenScraper(),
+    "www.kottbutiken.com": KottButikenScraper(),
 }
 
 _json_ld_scraper = JsonLdScraper()

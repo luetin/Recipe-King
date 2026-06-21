@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.deps import get_current_user, require_login
 from app.models import Recipe, User
+from app.scraping.registry import SITE_LABELS
 from app.services import recipe_service
 from app.services import collection_service
 from app.services.image_service import save_uploaded_image
@@ -99,7 +100,8 @@ def create_recipe(
 @router.get("/import/url")
 def import_url_form(request: Request, current_user: User = Depends(require_login)):
     return templates.TemplateResponse(
-        "recipes/import_url.html", {"request": request, "current_user": current_user}
+        "recipes/import_url.html",
+        {"request": request, "current_user": current_user, "site_labels": SITE_LABELS},
     )
 
 
