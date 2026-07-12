@@ -205,58 +205,77 @@
 <script>
 (function () {
   var wakeLock = null;
+  var noSleepVideo = null;
+  var active = false;
   var btn = document.getElementById('wakelock-btn');
-  var icon = document.getElementById('wakelock-icon');
   var label = document.getElementById('wakelock-label');
 
-  if ('wakeLock' in navigator) {
-    btn.style.display = 'inline-block';
-  }
+  // Always show the button
+  btn.style.display = 'inline-block';
 
-  function updateBtn(active) {
-    if (active) {
+  function updateBtn(on) {
+    active = on;
+    if (on) {
       btn.classList.remove('btn-secondary');
       btn.classList.add('btn-wakelock-active');
-      icon.textContent = '☀️';
       label.textContent = 'Skärmen hålls tänd';
     } else {
       btn.classList.add('btn-secondary');
       btn.classList.remove('btn-wakelock-active');
-      icon.textContent = '☀️';
       label.textContent = 'Håll skärmen tänd';
     }
   }
 
-  window.toggleWakeLock = async function () {
-    if (wakeLock) {
-      await wakeLock.release();
-      wakeLock = null;
-      updateBtn(false);
-    } else {
+  // Tiny looping video — keeps screen awake on HTTP (no HTTPS needed)
+  function startVideoHack() {
+    if (noSleepVideo) return;
+    noSleepVideo = document.createElement('video');
+    noSleepVideo.setAttribute('playsinline', '');
+    noSleepVideo.setAttribute('muted', '');
+    noSleepVideo.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;';
+    // 1-second blank MP4 encoded as base64
+    noSleepVideo.src = 'data:video/mp4;base64,AAAAIGZ0eXBtcDQyAAAAAG1wNDJtcDQxaXNvbWF2YzEAAATKbW9vdgAAAGxtdmhkAAAAANLEP5XSxD+XAAAD6AAAASwAAQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAABhpb2RzAAAAABCAgIAHAE////9//w==';
+    noSleepVideo.loop = true;
+    document.body.appendChild(noSleepVideo);
+    noSleepVideo.play().catch(function(){});
+  }
+
+  function stopVideoHack() {
+    if (!noSleepVideo) return;
+    noSleepVideo.pause();
+    noSleepVideo.remove();
+    noSleepVideo = null;
+  }
+
+  async function acquireWakeLock() {
+    if ('wakeLock' in navigator) {
       try {
         wakeLock = await navigator.wakeLock.request('screen');
-        updateBtn(true);
         wakeLock.addEventListener('release', function () {
           wakeLock = null;
-          updateBtn(false);
         });
-      } catch (e) {
-        alert('Kunde inte hålla skärmen tänd: ' + e.message);
-      }
+        return true;
+      } catch (e) {}
+    }
+    return false;
+  }
+
+  window.toggleWakeLock = async function () {
+    if (active) {
+      if (wakeLock) { await wakeLock.release(); wakeLock = null; }
+      stopVideoHack();
+      updateBtn(false);
+    } else {
+      var got = await acquireWakeLock();
+      if (!got) startVideoHack(); // HTTP fallback
+      updateBtn(true);
     }
   };
 
-  // Re-acquire after tab becomes visible again (OS releases lock on hide)
+  // Re-acquire native lock when tab comes back into focus
   document.addEventListener('visibilitychange', async function () {
-    if (wakeLock && document.visibilityState === 'visible') {
-      try {
-        wakeLock = await navigator.wakeLock.request('screen');
-        updateBtn(true);
-        wakeLock.addEventListener('release', function () {
-          wakeLock = null;
-          updateBtn(false);
-        });
-      } catch (e) {}
+    if (active && document.visibilityState === 'visible' && !wakeLock) {
+      await acquireWakeLock();
     }
   });
 })();
