@@ -1,17 +1,32 @@
 {% extends "base.html" %}
-{% block title %}Logga in - RecipeKing{% endblock %}
+{% block title %}Välj profil - RecipeKing{% endblock %}
 {% block content %}
-<h1>Logga in</h1>
-<form method="post" action="/login" class="card" style="max-width:400px;">
-  <div class="field">
-    <label for="email">E-post</label>
-    <input type="email" id="email" name="email" required>
+<div class="profile-picker">
+  <h1 class="profile-picker__heading">Vem är det?</h1>
+
+  {% if error %}
+  <div class="alert alert-error" style="max-width:360px; margin:0 auto 1rem;">{{ error }}</div>
+  {% endif %}
+
+  <div class="profile-grid">
+    {% for user in users %}
+    <form method="post" action="/login/{{ user.id }}">
+      <button type="submit" class="profile-card">
+        <div class="profile-avatar">{{ user.name[0].upper() }}</div>
+        <span class="profile-name">{{ user.name }}</span>
+      </button>
+    </form>
+    {% endfor %}
+
+    <div class="profile-card profile-card--new" onclick="document.getElementById('new-profile-form').classList.toggle('hidden')">
+      <div class="profile-avatar profile-avatar--add">+</div>
+      <span class="profile-name">Ny profil</span>
+    </div>
   </div>
-  <div class="field">
-    <label for="password">Lösenord</label>
-    <input type="password" id="password" name="password" required>
-  </div>
-  <button class="btn" type="submit">Logga in</button>
-  <p class="muted">Inget konto? <a href="/register">Registrera dig</a></p>
-</form>
+
+  <form id="new-profile-form" method="post" action="/register" class="new-profile-form hidden">
+    <input type="text" name="display_name" placeholder="Ditt namn" maxlength="100" required>
+    <button type="submit" class="btn">Skapa profil</button>
+  </form>
+</div>
 {% endblock %}
