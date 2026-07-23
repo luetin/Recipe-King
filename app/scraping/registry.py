@@ -7,6 +7,7 @@ from app.scraping.jsonld import JsonLdScraper
 from app.scraping.sites.bbqlovers import BbqLoversScraper
 from app.scraping.sites.kottbutiken import KottButikenScraper
 from app.scraping.sites.lindasbakskola import LindasBakSkolaScraper
+from app.scraping.sites.wprm import WprmScraper
 
 ALLOWED_DOMAINS = {
     "ica.se",
@@ -26,6 +27,8 @@ ALLOWED_DOMAINS = {
     "www.bbqlovers.se",
     "kottbutiken.com",
     "www.kottbutiken.com",
+    "hankstruebbq.com",
+    "www.hankstruebbq.com",
 }
 
 # Human-readable site labels shown on the import page
@@ -39,6 +42,7 @@ SITE_LABELS: list[tuple[str, str]] = [
     ("Lindas bakskola", "lindasbakskola.se"),
     ("BBQ Lovers", "bbqlovers.se"),
     ("Köttbutiken", "kottbutiken.com"),
+    ("Hank's True BBQ", "hankstruebbq.com"),
 ]
 
 # Sites that need a custom HTML parser instead of (or as fallback after) JSON-LD
@@ -49,6 +53,8 @@ _CUSTOM_SCRAPERS = {
     "www.bbqlovers.se": BbqLoversScraper(),
     "kottbutiken.com": KottButikenScraper(),
     "www.kottbutiken.com": KottButikenScraper(),
+    "hankstruebbq.com": WprmScraper(),
+    "www.hankstruebbq.com": WprmScraper(),
 }
 
 _json_ld_scraper = JsonLdScraper()
