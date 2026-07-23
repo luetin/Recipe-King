@@ -1,32 +1,51 @@
 {% extends "base.html" %}
 {% block title %}Välj profil - RecipeKing{% endblock %}
 {% block content %}
-<div class="profile-picker">
-  <h1 class="profile-picker__heading">Vem är det?</h1>
 
-  {% if error %}
-  <div class="alert alert-error" style="max-width:360px; margin:0 auto 1rem;">{{ error }}</div>
-  {% endif %}
+{% if error %}
+<div class="alert alert-error" style="max-width:360px; margin:0 auto 1rem;">{{ error }}</div>
+{% endif %}
 
-  <div class="profile-grid">
+<div class="picker-wrap">
+  <h1 class="picker-title">Vem är det?</h1>
+
+  <div class="picker-grid">
     {% for user in users %}
-    <form method="post" action="/login/{{ user.id }}">
-      <button type="submit" class="profile-card">
-        <div class="profile-avatar">{{ user.name[0].upper() }}</div>
-        <span class="profile-name">{{ user.name }}</span>
+    <form method="post" action="/login/{{ user.id }}" class="picker-form">
+      <button type="submit" class="picker-card">
+        <div class="picker-avatar" data-color="{{ loop.index0 % 6 }}">
+          {% if user.avatar_path %}
+          <img src="/uploads/{{ user.avatar_path }}" alt="{{ user.name }}">
+          {% else %}
+          {{ user.name[0].upper() }}
+          {% endif %}
+        </div>
+        <span class="picker-name">{{ user.name }}</span>
       </button>
     </form>
     {% endfor %}
 
-    <div class="profile-card profile-card--new" onclick="document.getElementById('new-profile-form').classList.toggle('hidden')">
-      <div class="profile-avatar profile-avatar--add">+</div>
-      <span class="profile-name">Ny profil</span>
+    <div class="picker-card picker-card--new" id="new-toggle" onclick="toggleNewForm()">
+      <div class="picker-avatar picker-avatar--add">+</div>
+      <span class="picker-name picker-name--muted">Ny profil</span>
     </div>
   </div>
 
-  <form id="new-profile-form" method="post" action="/register" class="new-profile-form hidden">
-    <input type="text" name="display_name" placeholder="Ditt namn" maxlength="100" required>
+  <form id="new-profile-form" method="post" action="/register" class="picker-new-form" style="display:none;">
+    <input type="text" name="display_name" placeholder="Ditt namn" maxlength="100" required id="new-name-input">
     <button type="submit" class="btn">Skapa profil</button>
+    <button type="button" class="btn btn-secondary" onclick="toggleNewForm()">Avbryt</button>
   </form>
 </div>
+
+<script>
+function toggleNewForm() {
+  var form = document.getElementById('new-profile-form');
+  var toggle = document.getElementById('new-toggle');
+  var visible = form.style.display !== 'none';
+  form.style.display = visible ? 'none' : 'flex';
+  toggle.style.display = visible ? '' : 'none';
+  if (!visible) document.getElementById('new-name-input').focus();
+}
+</script>
 {% endblock %}

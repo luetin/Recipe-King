@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -7,6 +7,7 @@ from app.database import get_db
 from app.deps import require_login
 from app.models import User
 from app.security import hash_password, verify_password
+from app.services.image_service import save_avatar_image
 
 router = APIRouter(prefix="/profile", tags=["profile"])
 templates = Jinja2Templates(directory="app/templates")
@@ -29,6 +30,7 @@ def update_profile(
     display_name: str = Form(""),
     current_password: str = Form(""),
     new_password: str = Form(""),
+    avatar: UploadFile | None = File(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_login),
 ):
@@ -39,8 +41,13 @@ def update_profile(
     else:
         user.display_name = None
 
+    if avatar and avatar.filename:
+        path = save_avatar_image(avatar)
+        if path:
+            user.avatar_path = path
+
     if new_password:
-        if not current_password or not verify_password(current_password, user.password_hash):
+        if user.password_hash and (not current_password or not verify_password(current_password, user.password_hash)):
             return templates.TemplateResponse(
                 "profile.html",
                 {
@@ -54,3 +61,14 @@ def update_profile(
 
     db.commit()
     return RedirectResponse(url="/profile?saved=1", status_code=303)
+
+
+@router.post("/avatar/remove")
+def remove_avatar(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_login),
+):
+    user = db.query(User).filter(User.id == current_user.id).first()
+    user.avatar_path = None
+    db.commit()
+    return RedirectResponse(url="/profile", status_code=303)
